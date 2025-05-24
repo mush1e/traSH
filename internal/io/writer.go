@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/mush1e/traSH/internal/config"
+	"github.com/mush1e/traSH/config"
 )
 
 var conf = config.GetConfig()
