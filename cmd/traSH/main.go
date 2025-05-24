@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/mush1e/traSH/internal/io"
+)
 
 func main() {
-	fmt.Println("BabaBoey")
+	io.WriteHeader(os.Stdout)
 }
