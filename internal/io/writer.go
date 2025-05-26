@@ -3,6 +3,7 @@ package io
 import (
 	"fmt"
 	"io"
+	"os"
 
 	"github.com/mush1e/traSH/config"
 )
@@ -26,5 +27,9 @@ func WriteHeader(w io.Writer) {
 
 func WritePrompt(w io.Writer) {
 	prompt := conf.Prompt + "> "
-	fmt.Fprintf(w, "%v ", prompt)
+	currPath, err := os.Getwd()
+	if err != nil {
+		fmt.Fprintf(w, "error getting current path - %q\n", err)
+	}
+	fmt.Fprintf(w, "%v | %v ", currPath, prompt)
 }

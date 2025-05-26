@@ -1,6 +1,7 @@
 package command
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -33,4 +34,13 @@ func ParseCommand(command string) *Command {
 	cmd.args = filteredArgs
 
 	return &cmd
+}
+
+func HandleCommand(cmd *Command) error {
+	switch cmd.command {
+	case "cd":
+		return HandleCD(cmd)
+	default:
+		return errors.New("invalid command entered! -- click help for a list of available commands")
+	}
 }

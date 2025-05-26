@@ -18,7 +18,10 @@ func main() {
 		for {
 			io.WritePrompt(os.Stdout)
 			cmd := command.ParseCommand(io.ReadUserInput(os.Stdin))
-			fmt.Printf("%s\n", cmd)
+			err := command.HandleCommand(cmd)
+			if err != nil {
+				fmt.Printf("error executing command - %v\n", err)
+			}
 		}
 	}()
 
