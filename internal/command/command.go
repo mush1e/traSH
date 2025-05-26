@@ -3,14 +3,16 @@ package command
 import (
 	"fmt"
 	"strings"
-
-	"github.com/mush1e/traSH/utils"
 )
 
 type Command struct {
 	command string
 	args    []string
 	opts    []rune
+}
+
+func (c *Command) String() string {
+	return fmt.Sprintf("cmd : %s, args : %v, opts : %s", c.command, c.args, string(c.opts))
 }
 
 func ParseCommand(command string) *Command {
@@ -20,14 +22,15 @@ func ParseCommand(command string) *Command {
 		args:    commandList[1:],
 	}
 
-	for idx, arg := range cmd.args {
-		if arg[0] == '-' {
+	var filteredArgs []string
+	for _, arg := range cmd.args {
+		if len(arg) > 0 && arg[0] == '-' {
 			cmd.opts = append(cmd.opts, []rune(arg[1:])...)
-			utils.Remove(cmd.args, idx)
+		} else {
+			filteredArgs = append(filteredArgs, arg)
 		}
 	}
-
-	fmt.Printf("%+v\n", cmd)
+	cmd.args = filteredArgs
 
 	return &cmd
 }

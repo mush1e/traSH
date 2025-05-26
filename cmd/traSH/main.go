@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -11,10 +12,14 @@ import (
 )
 
 func main() {
+	io.WriteHeader(os.Stdout)
+
 	go func() {
-		io.WriteHeader(os.Stdout)
-		io.WritePrompt(os.Stdout)
-		command.ParseCommand(io.ReadUserInput(os.Stdin))
+		for {
+			io.WritePrompt(os.Stdout)
+			cmd := command.ParseCommand(io.ReadUserInput(os.Stdin))
+			fmt.Printf("%s\n", cmd)
+		}
 	}()
 
 	quit := make(chan os.Signal, 1)
