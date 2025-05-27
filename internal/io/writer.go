@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/mush1e/traSH/config"
 	"github.com/mush1e/traSH/utils"
@@ -42,5 +43,14 @@ func BuildPrompt() string {
 	if err != nil {
 		cwd = "~"
 	}
-	return utils.Colorize(conf.Prompt+"🚀"+cwd+conf.PromptSymbol+"", conf.PromptColor)
+
+	// Shorten long paths
+	if len(cwd) > 50 {
+		parts := strings.Split(cwd, "/")
+		if len(parts) > 3 {
+			cwd = ".../" + strings.Join(parts[len(parts)-2:], "/")
+		}
+	}
+
+	return utils.Colorize(conf.Prompt+" "+cwd+conf.PromptSymbol, conf.PromptColor)
 }
