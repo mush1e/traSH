@@ -36,6 +36,8 @@ const (
 	KeyCtrlD     = 4
 )
 
+var history = NewHistory()
+
 type InputBuffer struct {
 	content   []rune
 	cursor    int
@@ -214,6 +216,7 @@ func ReadUserInput(prompt string) string {
 func readEnhancedInput(prompt string) string {
 	fd := int(os.Stdin.Fd())
 	oldState, err := term.MakeRaw(fd)
+
 	if err != nil {
 		fmt.Println("Failed to enter raw mode, falling back to basic input")
 		return readBasicInput(prompt)
@@ -223,7 +226,6 @@ func readEnhancedInput(prompt string) string {
 	buffer := NewInputBuffer(prompt)
 	reader := bufio.NewReader(os.Stdin)
 
-	// Initial render
 	buffer.render()
 
 	for {
@@ -235,6 +237,7 @@ func readEnhancedInput(prompt string) string {
 		switch char {
 		case KeyEnter:
 			fmt.Print("\r\n")
+			history.Add(buffer.getText())
 			return buffer.getText()
 
 		case KeyCtrlC:
@@ -296,10 +299,17 @@ func handleEscapeSequence(reader *bufio.Reader, buffer *InputBuffer) bool {
 
 	switch char3 {
 	case 'A': // Up arrow
-		// TODO: Add history support
+		prev := history.GetPrevious()
+		if prev != "" {
+			buffer.content = []rune(prev)
+			buffer.cursor = len(buffer.content)
+		}
+
 		return true
 	case 'B': // Down arrow
-		// TODO: Add history support
+		next := history.GetNext()
+		buffer.content = []rune(next)
+		buffer.cursor = len(buffer.content)
 		return true
 	case 'C': // Right arrow
 		return buffer.moveCursorRight()
