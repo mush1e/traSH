@@ -3,7 +3,7 @@ package command
 import "os"
 
 func HandleCD(cmd *Command) error {
-	if len(cmd.args) == 0 {
+	if len(cmd.args) == 0 || cmd.args[0] == "~" {
 		homeDir, err := os.UserHomeDir()
 		if err != nil {
 			return err

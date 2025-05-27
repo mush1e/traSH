@@ -3,6 +3,7 @@ package command
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 )
 
@@ -14,6 +15,10 @@ type Command struct {
 
 func (c *Command) String() string {
 	return fmt.Sprintf("cmd : %s, args : %v, opts : %s", c.command, c.args, string(c.opts))
+}
+
+func (c *Command) GetCommand() string {
+	return c.command
 }
 
 func ParseCommand(command string) *Command {
@@ -40,7 +45,10 @@ func HandleCommand(cmd *Command) error {
 	switch cmd.command {
 	case "cd":
 		return HandleCD(cmd)
+	case "exit":
+		os.Exit(1)
+		return nil
 	default:
-		return errors.New("invalid command entered! -- click help for a list of available commands")
+		return errors.New("invalid command entered! -- use help for a list of available commands")
 	}
 }
