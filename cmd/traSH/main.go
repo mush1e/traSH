@@ -25,8 +25,7 @@ func main() {
 			case <-ctx.Done():
 				return
 			default:
-				io.WritePrompt(os.Stdout)
-				cmd := command.ParseCommand(io.ReadUserInput(os.Stdin))
+				cmd := command.ParseCommand(io.ReadUserInput(io.BuildPrompt()))
 
 				if cmd.GetCommand() == "exit" {
 					close(userExit)
@@ -56,5 +55,5 @@ func main() {
 		cancel()
 	}
 
-	log.Println("traSh has been killed (rightfully so)... Thanks for visiting :)")
+	log.Println("traSH has been killed (rightfully so)... Thanks for visiting :)")
 }

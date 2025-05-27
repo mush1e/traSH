@@ -27,11 +27,20 @@ func WriteHeader(w io.Writer) {
 }
 
 func WritePrompt(w io.Writer) {
-	prompt := conf.Prompt + conf.PromptSymbol + " "
+	prompt := conf.Prompt + conf.PromptSymbol
 	currPath, err := os.Getwd()
 	if err != nil {
 		fmt.Fprintf(w, "error getting current path - %q\n", err)
 	}
 	coloredPrompt := utils.Colorize(prompt, conf.PromptColor)
 	fmt.Fprintf(w, "%v | %v ", currPath, coloredPrompt)
+}
+
+func BuildPrompt() string {
+	conf := config.GetConfig()
+	cwd, err := os.Getwd()
+	if err != nil {
+		cwd = "~"
+	}
+	return utils.Colorize(conf.Prompt+"🚀"+cwd+conf.PromptSymbol+"", conf.PromptColor)
 }

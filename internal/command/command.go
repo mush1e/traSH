@@ -57,7 +57,9 @@ func HandleCommand(cmd *Command) error {
 	case "cd":
 		return HandleCD(cmd)
 	case "exit":
-		os.Exit(1)
+		return nil
+	case "help":
+		printHelp()
 		return nil
 	default:
 		return HandleExternalCommand(cmd)
