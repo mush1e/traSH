@@ -77,7 +77,7 @@ func ParseTrashRC(filepath string) map[string]string {
 		if len(pair) == 2 {
 			trashRC[strings.TrimSpace(pair[0])] = strings.TrimSpace(pair[1])
 		} else {
-			errStr := fmt.Sprintf("invalid syntax in .trashrc file in line : %d", lineNum-1)
+			errStr := fmt.Sprintf("invalid syntax in .trashrc file in line : %d\nSWITCHING TO DEFAULT CONFIG\n", lineNum-1)
 			fmt.Println(utils.Colorize(errStr, "red"))
 			continue
 		}
