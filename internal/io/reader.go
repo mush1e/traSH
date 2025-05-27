@@ -145,49 +145,66 @@ func (ib *InputBuffer) render() {
 	// Move to beginning of line and clear it
 	fmt.Print("\r" + ClearLine)
 
-	// Print prompt
+	// Print prompt with space
 	fmt.Print(ib.prompt + " ")
 
-	// Colorize and print content
-	words := strings.Fields(string(ib.content))
-	currentPos := 0
+	// Build the display text and track cursor position
+	var displayText strings.Builder
+	visualCursorPos := ib.promptLen + 1 // Start after prompt + space
 
-	for i, word := range words {
-		// Add spaces between words (except first)
-		if i > 0 {
-			fmt.Print(" ")
-			currentPos++
-		}
+	contentStr := string(ib.content)
 
-		// Colorize based on position
-		color := "reset"
-		if i == 0 {
-			color = "green" // Command
-		} else if strings.HasPrefix(word, "-") {
-			color = "yellow" // Flags
-		} else if strings.Contains(word, "/") || strings.Contains(word, "~") {
-			color = "blue" // Paths
-		}
-
-		fmt.Print(utils.Colorize(word, color))
-		currentPos += len(word)
-	}
-
-	// Position cursor correctly
-	actualCursorPos := ib.promptLen + 1 + ib.cursor
+	// If we have content, colorize it
 	if len(ib.content) > 0 {
-		// Account for spaces between words
-		spaceCount := len(strings.Fields(string(ib.content[:ib.cursor]))) - 1
-		if spaceCount > 0 {
-			actualCursorPos += spaceCount
+		words := strings.Fields(contentStr)
+		wordStart := 0
+
+		for i, word := range words {
+			// Find where this word starts in the original content
+			wordPos := strings.Index(contentStr[wordStart:], word)
+			if wordPos != -1 {
+				wordStart += wordPos
+			}
+
+			// Add spaces before word (except first)
+			if i > 0 {
+				displayText.WriteString(" ")
+				if ib.cursor > wordStart {
+					visualCursorPos++
+				}
+			}
+
+			// Determine color
+			color := "reset"
+			if i == 0 {
+				color = "green" // Command
+			} else if strings.HasPrefix(word, "-") {
+				color = "yellow" // Flags
+			} else if strings.Contains(word, "/") || strings.Contains(word, "~") {
+				color = "blue" // Paths
+			}
+
+			// Add colored word
+			displayText.WriteString(utils.Colorize(word, color))
+
+			// Update cursor position if cursor is within or after this word
+			if ib.cursor > wordStart && ib.cursor <= wordStart+len(word) {
+				visualCursorPos += ib.cursor - wordStart
+			} else if ib.cursor > wordStart+len(word) {
+				visualCursorPos += len(word)
+			}
+
+			wordStart += len(word)
 		}
 	}
 
-	// Move cursor to correct position
-	fmt.Print("\r")
-	for i := 0; i < actualCursorPos; i++ {
-		fmt.Print(CursorRight)
-	}
+	// Print the colorized content
+	fmt.Print(displayText.String())
+
+	// Position cursor at the correct location
+	// Simple approach: calculate visual position based on logical cursor
+	cursorCol := ib.promptLen + 1 + ib.cursor
+	fmt.Printf("\r\033[%dC", cursorCol)
 }
 
 func ReadUserInput(prompt string) string {
