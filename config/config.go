@@ -3,7 +3,8 @@ package config
 import "sync"
 
 type Config struct {
-	Prompt string
+	Prompt      string
+	PromptColor string
 }
 
 var conf *Config
@@ -11,7 +12,8 @@ var once sync.Once
 
 func loadConfig() *Config {
 	return &Config{
-		Prompt: "traSH",
+		Prompt:      "traSH",
+		PromptColor: "yellow",
 	}
 }
 
