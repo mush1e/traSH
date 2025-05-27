@@ -9,7 +9,6 @@ import (
 func (ib *InputBuffer) CurrentWord() string {
 	inputSoFar := string(ib.content[:ib.cursor])
 	lastSpace := strings.LastIndex(inputSoFar, " ")
-
 	if lastSpace == -1 {
 		return inputSoFar
 	}

@@ -37,6 +37,7 @@ type InputBuffer struct {
 	promptLen    int
 	suggestions  []string
 	suggestIndex int
+	lastPrefix   string
 }
 
 func NewInputBuffer(prompt string) *InputBuffer {
@@ -183,24 +184,25 @@ func ReadUserInput(prompt string) string {
 		case KeyEscape:
 			handleEscapeSequence(reader, buffer)
 		case KeyTab:
-			prefix := buffer.CurrentWord()
-			if buffer.isFirstWord() {
-				buffer.suggestions = getCommandSuggestions(prefix)
-			} else {
-				buffer.suggestions = getFilePathSuggestions(prefix)
-			}
-			if len(buffer.suggestions) > 0 {
-				insert := buffer.suggestions[buffer.suggestIndex%len(buffer.suggestions)]
-
-				inputSoFar := string(buffer.content[:buffer.cursor])
-				lastSpace := strings.LastIndex(inputSoFar, " ")
-				start := 0
-				if lastSpace != -1 {
-					start = lastSpace + 1
+			// Capture current word only on first Tab
+			currWord := buffer.CurrentWord()
+			if len(buffer.suggestions) == 0 {
+				// Generate suggestions based on original prefix
+				buffer.lastPrefix = currWord
+				buffer.suggestIndex = 0
+				if buffer.isFirstWord() {
+					buffer.suggestions = getCommandSuggestions(currWord)
+				} else {
+					buffer.suggestions = getFilePathSuggestions(currWord)
 				}
-
-				buffer.content = append(buffer.content[:start], append([]rune(insert), buffer.content[buffer.cursor:]...)...)
-				buffer.cursor = start + len([]rune(insert))
+			}
+			// Cycle through suggestions
+			if len(buffer.suggestions) > 0 {
+				suggestion := buffer.suggestions[buffer.suggestIndex%len(buffer.suggestions)]
+				// Remove the current word (could be original prefix or previous suggestion)
+				start := buffer.cursor - len([]rune(currWord))
+				buffer.content = append(buffer.content[:start], append([]rune(suggestion), buffer.content[buffer.cursor:]...)...)
+				buffer.cursor = start + len([]rune(suggestion))
 				buffer.suggestIndex++
 			}
 		default:
@@ -208,6 +210,7 @@ func ReadUserInput(prompt string) string {
 				buffer.insertRune(char)
 				buffer.suggestions = nil
 				buffer.suggestIndex = 0
+				buffer.lastPrefix = ""
 			}
 		}
 		buffer.render()
