@@ -1,5 +1,7 @@
 package utils
 
+import "strings"
+
 // Remove removes an element at the specified index from a slice of any type
 func Remove[T any](slice []T, idx int) []T {
 	if idx < 0 || idx >= len(slice) {
@@ -26,4 +28,13 @@ func Colorize(text, color string) string {
 		c = colors["reset"]
 	}
 	return c + text + colors["reset"]
+}
+
+func Coalesce(values ...string) string {
+	for _, v := range values {
+		if strings.TrimSpace(v) != "" {
+			return v
+		}
+	}
+	return ""
 }

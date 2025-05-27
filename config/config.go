@@ -40,10 +40,11 @@ func loadConfig() *Config {
 	}
 
 	return &Config{
-		Prompt:       trashRC["prompt"],
-		PromptColor:  trashRC["color"],
-		PromptSymbol: trashRC["symbol"],
+		Prompt:       utils.Coalesce(trashRC["prompt"], defaultConfig.Prompt),
+		PromptColor:  utils.Coalesce(trashRC["color"], defaultConfig.PromptColor),
+		PromptSymbol: utils.Coalesce(trashRC["symbol"], defaultConfig.PromptSymbol),
 	}
+
 }
 
 func GetConfig() *Config {
