@@ -27,7 +27,7 @@ func WriteHeader(w io.Writer) {
 }
 
 func WritePrompt(w io.Writer) {
-	prompt := conf.Prompt + "> "
+	prompt := conf.Prompt + conf.PromptSymbol + " "
 	currPath, err := os.Getwd()
 	if err != nil {
 		fmt.Fprintf(w, "error getting current path - %q\n", err)
