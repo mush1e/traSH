@@ -1,9 +1,9 @@
 package command
 
 import (
-	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 )
 
@@ -32,13 +32,24 @@ func ParseCommand(command string) *Command {
 	for _, arg := range cmd.args {
 		if len(arg) > 0 && arg[0] == '-' {
 			cmd.opts = append(cmd.opts, []rune(arg[1:])...)
-		} else {
-			filteredArgs = append(filteredArgs, arg)
 		}
+		filteredArgs = append(filteredArgs, arg)
 	}
 	cmd.args = filteredArgs
 
 	return &cmd
+}
+
+func HandleExternalCommand(cmd *Command) error {
+	c := exec.Command(cmd.command, cmd.args...)
+	c.Stdout = os.Stdout
+	c.Stderr = os.Stderr
+	c.Stdin = os.Stdin
+
+	if err := c.Run(); err != nil {
+		return fmt.Errorf("traSH: %v", err)
+	}
+	return nil
 }
 
 func HandleCommand(cmd *Command) error {
@@ -49,6 +60,6 @@ func HandleCommand(cmd *Command) error {
 		os.Exit(1)
 		return nil
 	default:
-		return errors.New("invalid command entered! -- use help for a list of available commands")
+		return HandleExternalCommand(cmd)
 	}
 }
