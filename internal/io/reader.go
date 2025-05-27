@@ -234,7 +234,7 @@ func readEnhancedInput(prompt string) string {
 
 		switch char {
 		case KeyEnter:
-			fmt.Print("\n")
+			fmt.Print("\r\n")
 			return buffer.getText()
 
 		case KeyCtrlC:
