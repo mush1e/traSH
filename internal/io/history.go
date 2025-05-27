@@ -15,7 +15,11 @@ func NewHistory() *History {
 }
 
 func (h *History) Add(cmd string) {
-	if strings.TrimSpace(cmd) == "" {
+	cmd = strings.TrimSpace(cmd)
+	if cmd == "" {
+		return
+	}
+	if len(h.entries) > 0 && h.entries[len(h.entries)-1] == cmd {
 		return
 	}
 	h.entries = append(h.entries, cmd)
