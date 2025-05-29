@@ -52,25 +52,27 @@ func getFilePathSuggestions(prefix string) []string {
 	}
 
 	originalPrefix := prefix
-
 	// Handle tilde expansion
 	if len(prefix) > 0 && prefix[0] == '~' {
 		prefix = strings.Replace(prefix, "~", homePath, 1)
 	}
 
-	dir := filepath.Dir(prefix)
-	filenamePrefix := filepath.Base(prefix)
+	var dir string
+	var filenamePrefix string
 
 	if strings.HasSuffix(prefix, string(filepath.Separator)) {
 		dir = prefix
 		filenamePrefix = ""
-	}
-
-	if prefix == "" {
+	} else if prefix == "" {
+		// Handle empty prefix specially
 		dir, err = os.Getwd()
 		if err != nil {
 			dir = homePath
 		}
+		filenamePrefix = ""
+	} else {
+		dir = filepath.Dir(prefix)
+		filenamePrefix = filepath.Base(prefix)
 	}
 
 	entries, err := os.ReadDir(dir)
@@ -81,9 +83,18 @@ func getFilePathSuggestions(prefix string) []string {
 	suggestions := make([]string, 0)
 	seen := make(map[string]bool)
 
+	// Separate directories and files, prioritize directories for cd
+	var dirSuggestions []string
+	var fileSuggestions []string
+
 	for _, entry := range entries {
 		name := entry.Name()
 		if seen[name] {
+			continue
+		}
+
+		// Skip hidden files unless specifically requested
+		if len(filenamePrefix) == 0 && strings.HasPrefix(name, ".") {
 			continue
 		}
 
@@ -111,12 +122,16 @@ func getFilePathSuggestions(prefix string) []string {
 
 			if entry.IsDir() {
 				suggestion += string(filepath.Separator)
+				dirSuggestions = append(dirSuggestions, suggestion)
+			} else {
+				fileSuggestions = append(fileSuggestions, suggestion)
 			}
-
-			suggestions = append(suggestions, suggestion)
 			seen[name] = true
 		}
 	}
 
+	// For cd command, prioritize directories
+	suggestions = append(suggestions, dirSuggestions...)
+	suggestions = append(suggestions, fileSuggestions...)
 	return suggestions
 }

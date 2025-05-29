@@ -184,25 +184,38 @@ func ReadUserInput(prompt string) string {
 		case KeyEscape:
 			handleEscapeSequence(reader, buffer)
 		case KeyTab:
-			// Capture current word only on first Tab
-			currWord := buffer.CurrentWord()
+			// If this is the first tab press, initialize completion
 			if len(buffer.suggestions) == 0 {
-				// Generate suggestions based on original prefix
-				buffer.lastPrefix = currWord
+				// Store the original prefix for this completion session
+				buffer.lastPrefix = buffer.CurrentWord()
 				buffer.suggestIndex = 0
+
+				// Generate suggestions based on the original prefix
 				if buffer.isFirstWord() {
-					buffer.suggestions = getCommandSuggestions(currWord)
+					buffer.suggestions = getCommandSuggestions(buffer.lastPrefix)
 				} else {
-					buffer.suggestions = getFilePathSuggestions(currWord)
+					buffer.suggestions = getFilePathSuggestions(buffer.lastPrefix)
 				}
 			}
+
 			// Cycle through suggestions
 			if len(buffer.suggestions) > 0 {
 				suggestion := buffer.suggestions[buffer.suggestIndex%len(buffer.suggestions)]
-				// Remove the current word (could be original prefix or previous suggestion)
-				start := buffer.cursor - len([]rune(currWord))
-				buffer.content = append(buffer.content[:start], append([]rune(suggestion), buffer.content[buffer.cursor:]...)...)
-				buffer.cursor = start + len([]rune(suggestion))
+
+				// Find where the original word started
+				inputSoFar := string(buffer.content[:buffer.cursor])
+				lastSpace := strings.LastIndex(inputSoFar, " ")
+				var wordStart int
+				if lastSpace == -1 {
+					wordStart = 0
+				} else {
+					wordStart = lastSpace + 1
+				}
+
+				// Replace from word start to cursor with suggestion
+				buffer.content = append(buffer.content[:wordStart], append([]rune(suggestion), buffer.content[buffer.cursor:]...)...)
+				buffer.cursor = wordStart + len([]rune(suggestion))
+
 				buffer.suggestIndex++
 			}
 		default:
