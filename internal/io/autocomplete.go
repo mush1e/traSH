@@ -50,6 +50,10 @@ func getFilePathSuggestions(prefix string) []string {
 	if err != nil {
 		return nil
 	}
+
+	originalPrefix := prefix
+
+	// Handle tilde expansion
 	if len(prefix) > 0 && prefix[0] == '~' {
 		prefix = strings.Replace(prefix, "~", homePath, 1)
 	}
@@ -62,6 +66,13 @@ func getFilePathSuggestions(prefix string) []string {
 		filenamePrefix = ""
 	}
 
+	if prefix == "" {
+		dir, err = os.Getwd()
+		if err != nil {
+			dir = homePath
+		}
+	}
+
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		return nil
@@ -72,21 +83,40 @@ func getFilePathSuggestions(prefix string) []string {
 
 	for _, entry := range entries {
 		name := entry.Name()
-
 		if seen[name] {
 			continue
 		}
 
 		if filenamePrefix == "" || strings.HasPrefix(name, filenamePrefix) {
-			fullPath := filepath.Join(dir, name)
+			var suggestion string
 
-			if entry.IsDir() {
-				fullPath += string(filepath.Separator)
+			// For cd completion, we want relative paths or just names
+			if originalPrefix == "" {
+				// No prefix - just return the name
+				suggestion = name
+			} else if strings.HasPrefix(originalPrefix, "~") {
+				// Tilde prefix - return relative to home with tilde
+				suggestion = filepath.Join("~", strings.TrimPrefix(filepath.Join(dir, name), homePath))
+			} else if filepath.IsAbs(originalPrefix) {
+				// Absolute path - return full path
+				suggestion = filepath.Join(dir, name)
+			} else {
+				// Relative path - return relative
+				if dir == "." {
+					suggestion = name
+				} else {
+					suggestion = filepath.Join(dir, name)
+				}
 			}
 
-			suggestions = append(suggestions, fullPath)
+			if entry.IsDir() {
+				suggestion += string(filepath.Separator)
+			}
+
+			suggestions = append(suggestions, suggestion)
 			seen[name] = true
 		}
 	}
+
 	return suggestions
 }
