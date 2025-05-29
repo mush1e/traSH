@@ -202,15 +202,14 @@ func ReadUserInput(prompt string) string {
 			if len(buffer.suggestions) > 0 {
 				suggestion := buffer.suggestions[buffer.suggestIndex%len(buffer.suggestions)]
 
+				// Quote suggestion if it contains spaces
+				if strings.Contains(suggestion, " ") {
+					suggestion = "\"" + suggestion + "\""
+				}
+
 				// Find where the original word started
 				inputSoFar := string(buffer.content[:buffer.cursor])
-				lastSpace := strings.LastIndex(inputSoFar, " ")
-				var wordStart int
-				if lastSpace == -1 {
-					wordStart = 0
-				} else {
-					wordStart = lastSpace + 1
-				}
+				wordStart := buffer.findWordStart(inputSoFar)
 
 				// Replace from word start to cursor with suggestion
 				buffer.content = append(buffer.content[:wordStart], append([]rune(suggestion), buffer.content[buffer.cursor:]...)...)
