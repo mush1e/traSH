@@ -15,6 +15,7 @@ type Config struct {
 	Prompt       string
 	PromptColor  string
 	PromptSymbol string
+	openAIKey    string
 }
 
 var conf *Config
@@ -24,6 +25,7 @@ var defaultConfig = &Config{
 	Prompt:       "🗑️ traSH",
 	PromptColor:  "yellow",
 	PromptSymbol: " $_",
+	openAIKey:    "",
 }
 
 func loadConfig() *Config {
@@ -43,6 +45,7 @@ func loadConfig() *Config {
 		Prompt:       utils.Coalesce(trashRC["prompt"], defaultConfig.Prompt),
 		PromptColor:  utils.Coalesce(trashRC["color"], defaultConfig.PromptColor),
 		PromptSymbol: utils.Coalesce(trashRC["symbol"], defaultConfig.PromptSymbol),
+		openAIKey:    utils.Coalesce(trashRC["openai_key"], defaultConfig.openAIKey),
 	}
 
 }
@@ -52,6 +55,10 @@ func GetConfig() *Config {
 		conf = loadConfig()
 	})
 	return conf
+}
+
+func (c *Config) GetAPIKey() string {
+	return c.openAIKey
 }
 
 func ParseTrashRC(filepath string) map[string]string {

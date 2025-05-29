@@ -179,6 +179,10 @@ func HandleCommand(cmd *Command) error {
 	case "help", "?":
 		printHelp()
 		return nil
+	case "!ai":
+		return HandleAI(cmd)
+	case "!explain":
+		return HandleExplain(cmd)
 	default:
 		return HandleExternalCommand(cmd)
 	}
